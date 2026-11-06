@@ -126,39 +126,48 @@ flowchart LR
 **Goal:** every business rule about the plan, concurrency and the deadline is implemented in `reviews/services/` and proven by tests, with no HTTP and no real time involved.
 **References:** [Business rules BR-1 to BR-14](04-domain-model-and-business-rules.md#business-rules-catalogue-normative), [Acceptance criteria](09-acceptance-criteria.md) (features *Plan*, *One review in progress per document*, *Deadline*).
 
-- [ ] `plan` service: `available`, `completed`, `running` and `resets_at` for the current Europe/Rome month, by `requested_at` (BR-1, BR-2, BR-4, BR-5).
-- [ ] `expire` service: mark running reviews past their deadline as `failed/timed_out` (BR-8). Used by reads, by the request transaction and by the sweeper.
-- [ ] `request_review` service in **one transaction**: expire stale reviews → reject if one is running on the document (`ReviewInProgress`) → reject if `available < 1` (`PlanExhausted`, with `completed`, `running`, `resets_at`) → insert with `deadline_at = requested_at + 60 s` (BR-3, BR-6, BR-7, BR-12).
-- [ ] Lifecycle services with **conditional writes** (`status = running AND now < deadline_at`): `add_finding`, `complete`, `fail_ai_error`. Each returns whether it was applied; a late event is dropped and logged (BR-9, BR-10).
-- [ ] Read services: latest review and current result of a document (BR-19), previous completed review skipping failed ones (BR-18).
-- [ ] Tests (fake clock), one per acceptance scenario:
-  - [ ] Successful review consumes one slot
-  - [ ] Failed review does not consume
-  - [ ] Running reviews reserve slots
-  - [ ] Reservation released on failure
-  - [ ] Strict block when the plan is used up
-  - [ ] Month boundary counts in the month of the request
-  - [ ] A review running at midnight does not reserve a slot in the new month
-  - [ ] Stale running row does not block
-  - [ ] Late completion is ignored (no late finding stored, plan unchanged)
-  - [ ] Boundary at exactly 60 s → failed
-  - [ ] Completion at 59.999 s → completed
-  - [ ] Retry is a new review
-  - [ ] Previous review skips failed reviews
-- [ ] Concurrency test: two simultaneous requests on the same document → exactly one review created; two simultaneous requests for the last slot → exactly one accepted.
-- [ ] Commit.
+- [x] `plan` service: `available`, `completed`, `running` and `resets_at` for the current Europe/Rome month, by `requested_at` (BR-1, BR-2, BR-4, BR-5).
+- [x] `expire` service: mark running reviews past their deadline as `failed/timed_out` (BR-8). Used by reads, by the request transaction and by the sweeper.
+- [x] `request_review` service in **one transaction**: expire stale reviews → reject if one is running on the document (`ReviewInProgress`) → reject if `available < 1` (`PlanExhausted`, with `completed`, `running`, `resets_at`) → insert with `deadline_at = requested_at + 60 s` (BR-3, BR-6, BR-7, BR-12).
+- [x] Lifecycle services with **conditional writes** (`status = running AND now < deadline_at`): `add_finding`, `complete`, `fail_ai_error`. Each returns whether it was applied; a late event is dropped and logged (BR-9, BR-10).
+- [x] Read services: latest review and current result of a document (BR-19), previous completed review skipping failed ones (BR-18).
+- [x] Tests (fake clock), one per acceptance scenario:
+  - [x] Successful review consumes one slot
+  - [x] Failed review does not consume
+  - [x] Running reviews reserve slots
+  - [x] Reservation released on failure
+  - [x] Strict block when the plan is used up
+  - [x] Month boundary counts in the month of the request
+  - [x] A review running at midnight does not reserve a slot in the new month
+  - [x] Stale running row does not block
+  - [x] Late completion is ignored (no late finding stored, plan unchanged)
+  - [x] Boundary at exactly 60 s → failed
+  - [x] Completion at 59.999 s → completed
+  - [x] Retry is a new review
+  - [x] Previous review skips failed reviews
+- [x] Concurrency test: two simultaneous requests on the same document → exactly one review created; two simultaneous requests for the last slot → exactly one accepted.
+- [x] Commit.
 
 ### ✅ Checkpoint 2
 
 | Exit criterion | Verify by |
 |---|---|
-| Every scenario above has a passing test | `uv run pytest reviews` |
-| No business rule outside `services/` | Review: `api.py` and models contain no plan or deadline logic |
-| No direct call to the system time in services | Search for `timezone.now` / `datetime.now` outside `clock.py` |
-| Late events never change a terminal review | Dedicated tests pass |
-| Concurrency holds | Concurrency tests pass several runs in a row |
+| ✅ Every scenario above has a passing test | `uv run pytest reviews` |
+| ✅ No business rule outside `services/` | Review: `api.py` and models contain no plan or deadline logic |
+| ✅ No direct call to the system time in services | Search for `timezone.now` / `datetime.now` outside `clock.py` |
+| ✅ Late events never change a terminal review | Dedicated tests pass |
+| ✅ Concurrency holds | Concurrency tests pass several runs in a row |
 
 **Notes:**
+
+- Services: `expiry.py`, `request.py`, `lifecycle.py`, `reads.py`, next to `plan.py`. Every service takes `now` as an argument; none reads the time itself.
+- BR-18 and BR-19 need a single read: the "previous result" shown during a run **is** the current result (the latest completed review). `current_result` serves both; there is no separate "previous" function.
+- An expired review gets `finished_at = deadline_at` (when it actually timed out), not the time the expiry happened to run.
+- `add_finding` stores a copy of a `SampleFinding`, so the fake AI in phase 3 only passes the sample and its arrival number.
+- Tests beyond the scenario list, each guarding a rule a future change could break: every terminal state (completed, AI error, timed out) rejects all three late events; failed reviews of either reason and reviews of earlier months never count; "review in progress" is reported before "plan exhausted"; a stale row holds no slot; reviews of one lease version never replace the other's (BR-22); reads report an overdue review as timed out.
+- Concurrency: 5 threads at once, 5 runs per test, on a **file** SQLite test database (the in-memory one does not lock like the real database). Checked that the tests catch a race: with both the `IMMEDIATE` mode and the expiry `UPDATE` removed, all 10 runs fail.
+- Finding: the request transaction is serialized even without `IMMEDIATE`, because its first statement (the expiry `UPDATE`) already takes SQLite's write lock. `IMMEDIATE` stays, so correctness does not depend on statement order.
+- Boundaries checked by deliberately breaking the code: `<` vs `<=` on the deadline, in the lifecycle writes and in the expiry, each makes a test fail.
 
 ---
 

@@ -32,6 +32,8 @@ if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
         "timeout": 20,
         "init_command": "PRAGMA journal_mode=WAL;",
     }
+    # A file, not the default in-memory database, so concurrency tests use real locking.
+    DATABASES["default"]["TEST"] = {"NAME": str(BASE_DIR / "test_db.sqlite3")}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
