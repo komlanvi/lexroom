@@ -73,7 +73,9 @@ flowchart LR
 - Folders are `api/` (backend) and `web/` (frontend); the Docker services use the same names.
 - The README documents two ways to run and test: Docker, and locally without Docker (uv, Node.js, pnpm). The commands that don't exist yet (`seed`, Docker files) arrive in phases 1 and 6; checkpoint 7 checks them from a fresh clone.
 - The local backend runs with gunicorn (one worker, several threads), like in Docker, so there is exactly one sweeper (TD-4).
-- The web template is used without Tailwind (plain CSS, fewer dependencies).
+- Scaffolds trimmed to what the plan needs:
+  - `api/`: no ASGI entry point (WSGI only), no admin, auth, sessions, messages, static files or templates (no authentication in the brief).
+  - `web/`: no Tailwind (plain CSS), no ESLint (`next build` still type-checks), no demo assets or fonts, and no Cache Components or partial prefetching. `next.config.ts` sets `agentRules: false`, because `next dev` otherwise writes an `AGENTS.md` whenever it detects an AI coding agent.
 - AI session log: `ai-log/`, exported in phase 7.
 
 ---
