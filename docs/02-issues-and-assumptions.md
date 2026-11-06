@@ -82,7 +82,7 @@ The brief's rules are consistent with each other. The tensions below come from h
 | F3 | F1 shows the "latest review", but the PM wants the "previous one on screen". | Two concepts: latest review and current result (D2). |
 | F4 | "Follows it" implies real-time, but no transport is specified. | **Polling** (1 s on an active review, 2 s on the list while anything runs, 10 s otherwise) is proportionate for 3 users. |
 | F5 | A 4 h timebox vs a long list of edge cases. | Prioritized scope in [Scope](10-scope-and-questions.md#scope-for-the-4-hour-timebox). |
-| F6 | `samples/` path. | D-13. |
+| F6 | `samples/` path. | Resolved (D-13). |
 
 ## G. Technical pitfalls
 

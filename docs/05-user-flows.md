@@ -19,7 +19,7 @@ flowchart LR
   API -->|"start job after commit"| AI["Fake AI reviewer"]
   AI -.->|"findings one by one, then completion or error"| API
   SW["Deadline sweeper"] -->|"expire running reviews past deadline"| DB
-  SEED["samples/documents.json and lawyers.json"] -->|"seed at startup"| DB
+  SEED["samples/documents.json and samples/lawyers.json"] -->|"seed at startup"| DB
 ```
 
 ## Screen map

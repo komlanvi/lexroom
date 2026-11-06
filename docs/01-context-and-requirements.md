@@ -54,4 +54,4 @@ Purpose of the product, the brief's requirements restated, and what the sample d
 | D-10 | No workspace, plan or review entities exist in the data. | We introduce them. The initial state is "every document not reviewed, 10 of 10 available". |
 | D-11 | The fake AI returns **the same findings every time** for a document. | Re-reviewing an unchanged document spends a review for an identical result. Allowed, as the brief doesn't restrict it. |
 | D-12 | `uploadedBy` references valid lawyers (Sofia 3, Chiara 5, Riccardo 5). | Show it in the list. It is useful context, not a permission. |
-| D-13 | The brief says `samples/documents.json`, but the files sit at the repository root. | Minor. Put them in `samples/` to match the brief. |
+| D-13 | The brief says `samples/documents.json`, but the files were delivered at the repository root. | Resolved: moved to `samples/` to match the brief. |
