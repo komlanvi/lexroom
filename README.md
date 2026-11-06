@@ -1,12 +1,5 @@
 # Lexroom · Contract review flow
 
-A law-firm workspace where lawyers request an AI review of a contract, follow it live, and read the flagged clauses. The AI is faked.
-
-- `api/`: backend, Django + Django Ninja, SQLite.
-- `web/`: frontend, Next.js + TypeScript. It forwards `/api/*` to the backend, so the browser only talks to the frontend.
-- `samples/`: the brief's sample lawyers and documents, loaded at startup.
-- `docs/`: the product and technical analysis ([index](docs/README.md)).
-
 Choose **one** of the two ways below. Docker is the shortest. The local setup needs no Docker.
 
 ## Run and test with Docker
@@ -75,9 +68,7 @@ cd web && pnpm test         # frontend
 
 ## Decisions on the three contested points
 
-Each point opposes the PM and the senior partner (the customer). The full reasoning is in [docs/03-decisions.md](docs/03-decisions.md).
-
-**First, a reading of the brief.** Only a *completed* review has a result to read. A failed review is a *state* ("it completes or fails"), not a result. So the "previous" review in point 1 is the last **completed** one, and a failed review shows only its status.
+Full reasoning: [docs/03-decisions.md](docs/03-decisions.md).
 
 **1. The previous review while a new one runs: keep it, clearly marked as no longer current.**
 The live review takes the top of the panel. The last completed review stays below it, headed "Previous result · no longer current", with every finding tagged "Previous" and a muted style. The two lists are never merged. If the new review completes, it replaces the old one. If it fails, the old one is shown again as the current result, under a "Latest attempt failed · not counted" status.
@@ -96,6 +87,7 @@ When the plan is used up, nobody can start a review. The button is disabled and 
 
 ## Assumptions
 
+- **Completed vs failed reviews:** only a completed review has a result to read; a failed review is a state ("it completes or fails"). So the "previous" review kept on screen is the last **completed** one, and a failed review is shown as a status only.
 - **Plan month:** the calendar month in **Europe/Rome**. A review belongs to the month of its **request**: that is when the plan was checked and the cost confirmed. A review requested on 30 Nov that completes on 1 Dec counts in November.
 - **Reserving a slot:** a request reserves a slot when it starts, otherwise three parallel requests at "9 used" could end at 12. `available = 10 − completed this month − running`. The slot is used if the review completes and released if it fails or times out.
 - **Deadline:** a completion counts only if it is processed strictly before 60 s after the request. At exactly 60.000 s the review has failed (time limit).
@@ -104,7 +96,7 @@ When the plan is used up, nobody can start a review. The button is disabled and 
 - **Not offered** because the brief doesn't mention them: cancelling a running review, per-lawyer limits, a warning before re-reviewing an already reviewed document.
 - **Superseded documents (open question Q6):** the older lease is labelled "Previous version · superseded by the version of 24 Sep" and its reviews stay readable. Until the question is answered, it can still be reviewed like any other document.
 
-All assumptions and open questions: [docs/02-issues-and-assumptions.md](docs/02-issues-and-assumptions.md) and [docs/10-scope-and-questions.md](docs/10-scope-and-questions.md).
+All assumptions and open questions: [docs/02](docs/02-issues-and-assumptions.md), [docs/10](docs/10-scope-and-questions.md).
 
 ## Limitations
 
@@ -115,19 +107,18 @@ All assumptions and open questions: [docs/02-issues-and-assumptions.md](docs/02-
 - **No browser end-to-end tests.** The frontend has unit tests on its display logic (badges, button states, panel sections, sort order, messages). The flows were checked by hand in the browser, as recorded in the [implementation plan](docs/13-implementation-plan.md) checkpoints. The "last slot just taken by a colleague" message is covered by unit tests only.
 - **Small display gaps:** dates are absolute only (no "3 days ago"); the detail page of the older lease says "Previous version" without the newer version's date (the list shows it); the elapsed time in the list uses the browser clock (the review page uses the server's).
 - **Not production-ready as is:** the default `SECRET_KEY`, no HTTPS, no rate limiting, no monitoring.
-- **Timebox:** see "Time spent" below.
 
 ## Time spent
 
-**About 4 h 35 min**, from the first message of the AI session (11:36) to the final commit (about 16:12) on 6 Nov 2026, analysis included:
+**About 4 h 40 min**, from the first message of the AI session (11:36) to the final commit (about 16:15) on 6 Nov 2026, analysis included:
 
 | Part | Time (UTC+1) | Duration |
 |---|---|---|
 | Analysis of the brief, product decisions, technical decisions and plan | 11:36 – 14:35 | about 3 h |
 | Implementation, phases 0 to 6 (backend, frontend, Docker) | 14:35 – 16:06 | about 1 h 30 |
-| Documentation and delivery | 16:06 – 16:12 | about 5 min |
+| Documentation and delivery | 16:06 – 16:15 | about 10 min |
 
-This is about 35 minutes over the 4 h timebox. The extra time went into the analysis: settling the three contested points and the open questions first made the implementation short and kept its scope tight. Nothing from the planned scope was cut.
+This is about 40 minutes over the 4 h timebox. The extra time went into the analysis: settling the three contested points and the open questions first made the implementation short and kept its scope tight. Nothing from the planned scope was cut.
 
 ## AI tools used
 
