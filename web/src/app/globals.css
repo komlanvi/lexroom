@@ -1,8 +1,202 @@
+:root {
+  --text: #1f2328;
+  --muted: #59636e;
+  --border: #d1d9e0;
+  --surface: #f6f8fa;
+  --primary: #0b57d0;
+  --neutral: #59636e;
+  --active: #0b57d0;
+  --success: #1a7f37;
+  --danger: #c62828;
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  color: var(--text);
   font-family: system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+a {
+  color: var(--primary);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Header */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.plan {
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  font-size: 14px;
+}
+
+.plan-exhausted strong {
+  color: var(--danger);
+}
+
+.identity select {
+  padding: 6px 8px;
+  font: inherit;
+}
+
+/* Page */
+
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.page-message {
+  padding: 24px;
+  color: var(--muted);
+}
+
+/* Document list */
+
+.documents {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.documents th,
+.documents td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.documents th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.tag {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.badge {
+  font-weight: 500;
+}
+
+.badge-neutral {
+  color: var(--neutral);
+}
+
+.badge-active {
+  color: var(--active);
+}
+
+.badge-success {
+  color: var(--success);
+}
+
+.badge-danger {
+  color: var(--danger);
+}
+
+/* Dialog and buttons */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 40%);
+}
+
+.dialog {
+  width: min(480px, calc(100% - 32px));
+  padding: 24px;
+  border-radius: 8px;
+  background: white;
+}
+
+.dialog h1 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.lawyer-options {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 0;
+  border: 0;
+}
+
+.lawyer-options label {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.button {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: white;
+  font: inherit;
+  cursor: pointer;
+}
+
+.button.primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

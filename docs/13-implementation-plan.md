@@ -218,25 +218,32 @@ flowchart LR
 **Goal:** the frontend talks to the API through the proxy, a lawyer can pick an identity, and the document list shows each document's latest review state and the plan.
 **References:** [TD-6](12-technical-decisions.md#td-6--real-time-updates-polling), [TD-7](12-technical-decisions.md#td-7--identity), [TD-9](12-technical-decisions.md#td-9--frontend--api-same-origin-proxy), [Wireframes S0 and S1](06-screens-and-ui-states.md#wireframes-low-fidelity), [UI state matrices](06-screens-and-ui-states.md#ui-state-matrices).
 
-- [ ] Proxy `/api/*` to the backend. Choose build-time `rewrites` or a runtime route handler (TD-9), and note the choice.
-- [ ] Typed API client and a polling hook (intervals from TD-6; stop on terminal status).
-- [ ] Identity picker: blocking on first visit, stored in `localStorage`, switchable from the header; `X-Lawyer-Id` sent on mutations.
-- [ ] Header plan counter: `{available} of 10 available · {running} running · resets {date}` (Europe/Rome), red at 0.
-- [ ] Document list: title, upload date and uploader, **"Previous version · superseded by the version of {date}"** label, latest review badge for every state in the matrix (not reviewed, in progress, completed with n findings, completed with no clauses flagged, failed with or without an earlier result).
-- [ ] Pure display logic in `lib/` (badge state) with unit tests.
-- [ ] Commit.
+- [x] Proxy `/api/*` to the backend. Choose build-time `rewrites` or a runtime route handler (TD-9), and note the choice.
+- [x] Typed API client and a polling hook (intervals from TD-6; stop on terminal status).
+- [x] Identity picker: blocking on first visit, stored in `localStorage`, switchable from the header; `X-Lawyer-Id` sent on mutations.
+- [x] Header plan counter: `{available} of 10 available · {running} running · resets {date}` (Europe/Rome), red at 0.
+- [x] Document list: title, upload date and uploader, **"Previous version · superseded by the version of {date}"** label, latest review badge for every state in the matrix (not reviewed, in progress, completed with n findings, completed with no clauses flagged, failed with or without an earlier result).
+- [x] Pure display logic in `lib/` (badge state) with unit tests.
+- [x] Commit.
 
 ### ✅ Checkpoint 4
 
 | Exit criterion | Verify by |
 |---|---|
-| Browser only calls the frontend origin | Browser network tab: no direct call to the backend port |
-| Identity persists and can be switched | Reload the page; switch lawyer from the header |
-| List shows the 13 documents and the superseded label | Visual check against wireframe S1 |
-| Every badge state renders | Unit tests on badge logic, plus a manual check with seeded reviews |
-| Plan counter is live | Request a review with `curl`; the counter updates within the polling interval |
+| ✅ Browser only calls the frontend origin | Browser network tab: no direct call to the backend port |
+| ✅ Identity persists and can be switched | Reload the page; switch lawyer from the header |
+| ✅ List shows the 13 documents and the superseded label | Visual check against wireframe S1 |
+| ✅ Every badge state renders | Unit tests on badge logic, plus a manual check with seeded reviews |
+| ✅ Plan counter is live | Request a review with `curl`; the counter updates within the polling interval |
 
 **Notes:**
+
+- Proxy: a runtime route handler (`src/app/api/[...path]/route.ts`), not `rewrites`. It reads `API_URL` at request time, so one build works locally and in Docker. It forwards only `X-Lawyer-Id`, and returns `502 API_UNAVAILABLE` (same error body) when the backend cannot be reached.
+- `usePolling(load, nextDelay)`: `nextDelay` picks the next interval from the data (TD-6) or returns `null` to stop. On error it keeps the last data and retries after 2 s.
+- The list and the header poll every 2 s while a review is running, otherwise every 10 s. The elapsed time in the list uses the browser clock (display only; the deadline is never decided on the client).
+- Dates use fixed English month names and the Europe/Rome time zone, so they do not depend on the browser locale (`Intl` en-GB writes "Sept").
+- Document titles link to `/documents/{id}`; the page is built in Phase 5.
+- Manual check in a production build (`next build` + `next start`). In `next dev`, open the app on `localhost`: the dev server blocks its scripts for other hosts such as `127.0.0.1` (Next.js `allowedDevOrigins`).
 
 ---
 

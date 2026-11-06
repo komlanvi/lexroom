@@ -1,3 +1,5 @@
+import { DocumentList } from "@/components/DocumentList";
+
 export default function Home() {
-  return <main>Lexroom · Contract review</main>;
+  return <DocumentList />;
 }
