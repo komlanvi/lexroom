@@ -85,29 +85,39 @@ flowchart LR
 **Goal:** the data model exists with its constraints, the sample data is seeded, and read-only endpoints return it.
 **References:** [Domain model](04-domain-model-and-business-rules.md), [API contract](08-api-contract.md), [TD-2](12-technical-decisions.md#td-2--database-sqlite-switchable-to-postgresql), [TD-3](12-technical-decisions.md#td-3--concurrency), [TD-5](12-technical-decisions.md#td-5--time-and-randomness), [TD-10](12-technical-decisions.md#td-10--startup-migrations-and-seeding).
 
-- [ ] Settings from environment: `DATABASE_URL` (default SQLite), `PLAN_LIMIT=10`, `REVIEW_TIMEOUT_S=60`, `PLAN_TZ=Europe/Rome`, `USE_TZ=True`.
-- [ ] SQLite options: `transaction_mode = IMMEDIATE`, WAL mode, busy timeout.
-- [ ] `workspace` app: `Lawyer`, `Document` (with self-reference `supersedes`), `SampleFinding` (the fake AI's script, with `position`).
-- [ ] `reviews` app: `Review` (`status`, `failure_reason`, `requested_by`, `requested_at`, `deadline_at`, `finished_at`) and `Finding` (`seq`, nullable `clause` and `excerpt`).
-- [ ] Constraints: one running review per document (conditional unique), `(review, seq)` unique, status and failure-reason checks.
-- [ ] `Clock` interface with a system and a fake implementation.
-- [ ] Idempotent `seed` command reading `samples/lawyers.json` and `samples/documents.json`.
-- [ ] Endpoints: `GET /api/lawyers`, `GET /api/documents`, `GET /api/documents/{id}`, `GET /api/plan` (plan computed from BR-2, even if no review exists yet).
-- [ ] Tests: seed loads 3 lawyers, 13 documents and the right number of sample findings; running it twice changes nothing; the conditional unique constraint rejects a second running review on the same document.
-- [ ] Commit.
+- [x] Settings from environment: `DATABASE_URL` (default SQLite), `PLAN_LIMIT=10`, `REVIEW_TIMEOUT_S=60`, `PLAN_TZ=Europe/Rome`, `USE_TZ=True`.
+- [x] SQLite options: `transaction_mode = IMMEDIATE`, WAL mode, busy timeout.
+- [x] `workspace` app: `Lawyer`, `Document` (with self-reference `supersedes`), `SampleFinding` (the fake AI's script, with `position`).
+- [x] `reviews` app: `Review` (`status`, `failure_reason`, `requested_by`, `requested_at`, `deadline_at`, `finished_at`) and `Finding` (`seq`, nullable `clause` and `excerpt`).
+- [x] Constraints: one running review per document (conditional unique), `(review, seq)` unique, status and failure-reason checks.
+- [x] `Clock` interface with a system and a fake implementation.
+- [x] Idempotent `seed` command reading `samples/lawyers.json` and `samples/documents.json`.
+- [x] Endpoints: `GET /api/lawyers`, `GET /api/documents`, `GET /api/documents/{id}`, `GET /api/plan` (plan computed from BR-2, even if no review exists yet).
+- [x] Tests: seed loads 3 lawyers, 13 documents and the right number of sample findings; running it twice changes nothing; the conditional unique constraint rejects a second running review on the same document.
+- [x] Commit.
 
 ### ✅ Checkpoint 1
 
 | Exit criterion | Verify by |
 |---|---|
-| Migrations apply from scratch | Delete the SQLite file, run `migrate` |
-| Seed is complete and idempotent | Tests green; run `seed` twice and counts stay 3 / 13 |
-| Superseded lease is linked | `GET /api/documents` shows `supersedes` / `superseded_by` on the two leases |
-| Null clause and excerpt survive | The 3 "missing clause" findings have `null` clause and excerpt |
-| Plan endpoint answers | `GET /api/plan` returns `available = 10`, `resets_at` = 1st of next month 00:00 Europe/Rome |
-| All tests green | `uv run pytest` |
+| ✅ Migrations apply from scratch | Delete the SQLite file, run `migrate` |
+| ✅ Seed is complete and idempotent | Tests green; run `seed` twice and counts stay 3 / 13 |
+| ✅ Superseded lease is linked | `GET /api/documents` shows `supersedes` / `superseded_by` on the two leases |
+| ✅ Null clause and excerpt survive | The 3 "missing clause" findings have `null` clause and excerpt |
+| ✅ Plan endpoint answers | `GET /api/plan` returns `available = 10`, `resets_at` = 1st of next month 00:00 Europe/Rome |
+| ✅ All tests green | `uv run pytest` |
 
 **Notes:**
+
+- The samples hold **47** sample findings (the franchise agreement alone has 18).
+- `GET /api/plan` needs BR-2, so `reviews/services/plan.py` (`plan_month`, `get_plan`) is written here. Its Europe/Rome month boundaries are tested now (UTC vs Rome at midnight, new year, daylight saving). The counting scenarios with reviews stay in phase 2.
+- Errors already use the contract body `{code, message, details}`: `404 NOT_FOUND` and `422 INVALID_REQUEST` (malformed id), from one helper in `config/api.py` that phase 3 reuses.
+- `GET /api/documents` lists newest upload first (the wireframe does not fix an order). `latest_review` and `current_result` are added in phase 3, as planned.
+- The application clock is `reviews.clock.clock`. Services take `now` as an argument; tests swap the clock with the `fake_clock` fixture.
+- The seed folder is configurable with `SAMPLES_DIR` (default `../samples`), for the Docker image in phase 6. The seed never touches reviews.
+- Ninja's interactive docs page is off: it needs the template and static-file apps removed in phase 0.
+- A test caught a real bug: the "failure reason only when failed" check accepted a failed review with no reason, because in SQL `NULL IN (...)` is unknown and a `CHECK` lets unknown pass. Fixed with an explicit `IS NOT NULL`.
+- Phase 6 watch-out: slim Python images may lack system time zone data; add the `tzdata` package if `Europe/Rome` fails to load there.
 
 ---
 
