@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 
-import { api } from "@/lib/api";
 import { planSummary } from "@/lib/display";
-import { ACTIVE_MS, IDLE_MS, usePolling } from "@/lib/usePolling";
 
 import { useIdentity } from "./Identity";
+import { usePlan } from "./Plan";
 
 export function Header() {
   const { lawyers, lawyer, setLawyerId } = useIdentity();
-  const { data: plan } = usePolling(api.plan, (current) => (current.running > 0 ? ACTIVE_MS : IDLE_MS));
+  const { plan } = usePlan();
   const summary = plan ? planSummary(plan) : null;
 
   return (

@@ -252,18 +252,18 @@ flowchart LR
 **Goal:** the three flows of the brief work in the browser, and the three decisions are visible in what is built.
 **References:** [Decisions](03-decisions.md), [Screens and UI states](06-screens-and-ui-states.md), [Errors and edge cases](07-errors-and-edge-cases.md), BR-11 to BR-21.
 
-- [ ] Document detail page with the review panel.
-- [ ] Request button states, in priority order: running on this document · `available = 0` with reviews in progress (**explicit message**: completed + in progress = 10, a failing review frees its slot within 60 s, request not saved) · plan used up (reset date) · request in flight · "Retry review" · "Request a new review" · "Request review".
-- [ ] Confirmation dialog: cost, available before → after, free if it fails or exceeds 60 s, "last review this month" wording when 1 is left (BR-13).
-- [ ] `409 REVIEW_IN_PROGRESS` → switch to following the existing review, showing who started it. `409 PLAN_EXHAUSTED` → "Your request has not been saved" + the matching explanation.
-- [ ] Live panel: findings in arrival order, **"Partial"** tag and draft style, incomplete banner, no totals, elapsed time against 60 s from `server_now` (BR-15).
-- [ ] Previous **completed** review below the live one, labelled **"Previous result · no longer current"**, each finding tagged "Previous", never merged (BR-18).
-- [ ] Completion: "Partial" tags removed, sorted by severity then natural clause order, "General" last, **Final** badge (BR-17).
-- [ ] Failure: status only (reason, time, requester, not counted, Retry), **no findings**, then the last completed review as the current result if there is one (BR-16).
-- [ ] Special cases: "Completed · no clauses flagged" with disclaimer (Consulting agreement); "General (no specific clause)" and the missing-excerpt note; severity shown with text and icon, not colour only.
-- [ ] Connection-lost banner ("Should").
-- [ ] Unit tests on the pure logic: button state, finding sort order, label selection.
-- [ ] Commit.
+- [x] Document detail page with the review panel.
+- [x] Request button states, in priority order: running on this document · `available = 0` with reviews in progress (**explicit message**: completed + in progress = 10, a failing review frees its slot within 60 s, request not saved) · plan used up (reset date) · request in flight · "Retry review" · "Request a new review" · "Request review".
+- [x] Confirmation dialog: cost, available before → after, free if it fails or exceeds 60 s, "last review this month" wording when 1 is left (BR-13).
+- [x] `409 REVIEW_IN_PROGRESS` → switch to following the existing review, showing who started it. `409 PLAN_EXHAUSTED` → "Your request has not been saved" + the matching explanation.
+- [x] Live panel: findings in arrival order, **"Partial"** tag and draft style, incomplete banner, no totals, elapsed time against 60 s from `server_now` (BR-15).
+- [x] Previous **completed** review below the live one, labelled **"Previous result · no longer current"**, each finding tagged "Previous", never merged (BR-18).
+- [x] Completion: "Partial" tags removed, sorted by severity then natural clause order, "General" last, **Final** badge (BR-17).
+- [x] Failure: status only (reason, time, requester, not counted, Retry), **no findings**, then the last completed review as the current result if there is one (BR-16).
+- [x] Special cases: "Completed · no clauses flagged" with disclaimer (Consulting agreement); "General (no specific clause)" and the missing-excerpt note; severity shown with text and icon, not colour only.
+- [x] Connection-lost banner ("Should").
+- [x] Unit tests on the pure logic: button state, finding sort order, label selection.
+- [x] Commit.
 
 ### ✅ Checkpoint 5
 
@@ -271,16 +271,24 @@ Walk through every scenario of the *Reading results* and *Identity* features in 
 
 | Exit criterion | Verify by |
 |---|---|
-| Flow 1: list shows each document's latest review state | Manual check, two browser windows with different lawyers |
-| Flow 2: a review can be requested and followed until it completes or fails | Request reviews until all three outcomes have been seen (or use a seeded fake) |
-| Flow 3: a completed review is readable, sorted, with severity and explanation | Franchise agreement (16 findings) and NDA (null clause) |
-| Decision 1 visible | Previous result labelled "no longer current" while a new review runs |
-| Decision 2 visible | Partial tags while running; nothing shown from a failed review |
-| Decision 3 visible | Plan used up → button disabled with the reset date; no request is saved |
-| Two lawyers, same document | Second lawyer is switched to following the first lawyer's review |
-| Frontend unit tests green | `pnpm test` |
+| ✅ Flow 1: list shows each document's latest review state | Manual check, two browser windows with different lawyers |
+| ✅ Flow 2: a review can be requested and followed until it completes or fails | Request reviews until all three outcomes have been seen (or use a seeded fake) |
+| ✅ Flow 3: a completed review is readable, sorted, with severity and explanation | Franchise agreement (16 findings) and NDA (null clause) |
+| ✅ Decision 1 visible | Previous result labelled "no longer current" while a new review runs |
+| ✅ Decision 2 visible | Partial tags while running; nothing shown from a failed review |
+| ✅ Decision 3 visible | Plan used up → button disabled with the reset date; no request is saved |
+| ✅ Two lawyers, same document | Second lawyer is switched to following the first lawyer's review |
+| ✅ Frontend unit tests green | `pnpm test` |
 
 **Notes:**
+
+- The plan is polled once, in a `PlanProvider` shared by the header counter and the request button, and reloaded right after a request. While a review runs it is polled every 2 s, so a held slot that frees up re-enables the button on its own.
+- The detail page polls one loader (document, latest review, current result): 1 s while its review runs, 2 s while any review runs, 10 s otherwise. A review started by another lawyer is picked up within that interval (edge case 20).
+- What the panel shows is one pure function, `panelSections(latest, result)`, tested for every row of the panel matrix. A failed review's section renders a status only, and the API already returns no findings for it (BR-16).
+- The request button and its explanation sit above the panel in every state (one place for "Request review", "Retry review" and "Request a new review"), rather than inside each panel box as in the low-fidelity wireframes.
+- Elapsed time uses `server_now` from the last poll (edge case 21), so it advances with the 1 s polling, not with a client timer.
+- The Franchise agreement has 18 findings in `samples/documents.json` (the table above says 16).
+- Manual walkthrough (production build, real fake AI): failed with an earlier result (NDA, no findings of the failed attempt shown); failed with no result (Loan); live run with Partial findings and the previous result below it; one run ended with an AI error after a partial finding, which disappeared; completion re-sorted with the Final badge; Consulting "no clauses flagged"; Franchise sorted by severity then clause order; 409 `REVIEW_IN_PROGRESS` switched to following the other lawyer's review; 9 completed + 1 running showed the "in use" message, then the "plan used up" message once it completed; unknown document id; backend stopped, then the connection-lost banner, and recovery. The `PLAN_EXHAUSTED` notice is covered by unit tests only.
 
 ---
 

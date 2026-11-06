@@ -18,16 +18,24 @@ const LONG_MONTHS = [
 
 const romeParts = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Europe/Rome",
+  year: "numeric",
   day: "numeric",
   month: "numeric",
   hour: "2-digit",
   minute: "2-digit",
+  second: "2-digit",
   hourCycle: "h23",
 });
 
 function inRome(iso: string) {
   const parts = Object.fromEntries(romeParts.formatToParts(new Date(iso)).map((part) => [part.type, part.value]));
-  return { day: Number(parts.day), month: MONTHS[Number(parts.month) - 1], time: `${parts.hour}:${parts.minute}` };
+  return {
+    day: Number(parts.day),
+    month: MONTHS[Number(parts.month) - 1],
+    year: parts.year,
+    time: `${parts.hour}:${parts.minute}`,
+    seconds: parts.second,
+  };
 }
 
 /** "6 Nov" */
@@ -40,6 +48,18 @@ export function formatDay(iso: string): string {
 export function formatDayTime(iso: string): string {
   const { day, month, time } = inRome(iso);
   return `${day} ${month}, ${time}`;
+}
+
+/** "1 Dec 2026, 00:00" */
+export function formatDateTime(iso: string): string {
+  const { day, month, year, time } = inRome(iso);
+  return `${day} ${month} ${year}, ${time}`;
+}
+
+/** "14:10:05" */
+export function formatTime(iso: string): string {
+  const { time, seconds } = inRome(iso);
+  return `${time}:${seconds}`;
 }
 
 /** "2026-11" → "November" */

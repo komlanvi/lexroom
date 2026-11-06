@@ -138,6 +138,127 @@ a {
   color: var(--danger);
 }
 
+.connection-lost {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fff8c5;
+}
+
+/* Document detail */
+
+.document-title {
+  margin: 16px 0 4px;
+  font-size: 22px;
+}
+
+.request {
+  margin: 24px 0;
+}
+
+.request p {
+  margin: 8px 0 0;
+}
+
+.request-notice {
+  font-weight: 500;
+}
+
+.panel {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.panel h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.panel-live {
+  border-color: var(--active);
+}
+
+.panel-banner {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #ddf4ff;
+}
+
+.panel-previous {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.panel-failed {
+  border-color: var(--danger);
+}
+
+.panel-failed h2 {
+  color: var(--danger);
+}
+
+.panel-empty {
+  color: var(--muted);
+}
+
+.final-badge {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--success);
+  color: white;
+  font-size: 13px;
+}
+
+/* Findings */
+
+.finding {
+  margin: 12px 0 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.finding p,
+.finding blockquote {
+  margin: 4px 0;
+}
+
+.finding blockquote {
+  font-style: italic;
+}
+
+.finding-tag {
+  margin-right: 8px;
+  padding: 1px 6px;
+  border: 1px solid currentcolor;
+  border-radius: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.severity {
+  font-weight: 600;
+}
+
+.finding-high .severity {
+  color: var(--danger);
+}
+
+.finding-medium .severity {
+  color: #9a6700;
+}
+
+/* After the severity colours: partial and previous findings are muted. */
+.finding-partial {
+  border-style: dashed;
+}
+
+.finding-partial .severity,
+.finding-previous .severity {
+  color: var(--muted);
+}
+
 /* Dialog and buttons */
 
 .dialog-backdrop {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Header } from "@/components/Header";
 import { IdentityProvider } from "@/components/Identity";
+import { PlanProvider } from "@/components/Plan";
 
 import "./globals.css";
 
@@ -14,8 +15,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en">
       <body>
         <IdentityProvider>
-          <Header />
-          <main className="main">{children}</main>
+          <PlanProvider>
+            <Header />
+            <main className="main">{children}</main>
+          </PlanProvider>
         </IdentityProvider>
       </body>
     </html>
