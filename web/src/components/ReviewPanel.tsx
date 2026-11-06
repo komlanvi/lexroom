@@ -97,7 +97,8 @@ function FinalReview({ review }: { review: Review }) {
       </h2>
       {count === 0 ? (
         <p>
-          <strong>Completed · no clauses flagged.</strong> The AI found nothing to flag in this contract.
+          <strong>Completed · no clauses flagged.</strong> The AI flagged no clauses. This is not a legal opinion that
+          the contract is risk-free.
         </p>
       ) : (
         <p className="muted">{count === 1 ? "1 finding" : `${count} findings`}, sorted by severity</p>

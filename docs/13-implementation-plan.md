@@ -328,26 +328,55 @@ Walk through every scenario of the *Reading results* and *Identity* features in 
 **Goal:** the repository contains everything the brief asks to deliver.
 **References:** the brief's "What to deliver" and "Evaluation points".
 
-- [ ] README: run instructions (Docker and local), test instructions.
-- [ ] README: decisions on the three points with their reasons, and what was refused (link to [decisions](03-decisions.md)).
-- [ ] README: assumptions (Europe/Rome, month of the request, completed vs failed reviews, identity, Q6 still open).
-- [ ] README: limitations (SQLite only and how to switch, in-process threads, no authentication, anything unfinished from the checkpoints).
-- [ ] README: time actually spent, deduced from the timestamps of the AI session log (first to last message, analysis included).
-- [ ] README: AI tools used and how.
-- [ ] AI session log exported, with anything personal or confidential removed.
-- [ ] Final pass over the [acceptance criteria](09-acceptance-criteria.md): every scenario covered by a test or a recorded manual check.
-- [ ] Final commit.
+- [x] README: run instructions (Docker and local), test instructions.
+- [x] README: decisions on the three points with their reasons, and what was refused (link to [decisions](03-decisions.md)).
+- [x] README: assumptions (Europe/Rome, month of the request, completed vs failed reviews, identity, Q6 still open).
+- [x] README: limitations (SQLite only and how to switch, in-process threads, no authentication, anything unfinished from the checkpoints).
+- [x] README: time actually spent, deduced from the timestamps of the AI session log (first to last message, analysis included).
+- [x] README: AI tools used and how.
+- [x] AI session log exported, with anything personal or confidential removed.
+- [x] Final pass over the [acceptance criteria](09-acceptance-criteria.md): every scenario covered by a test or a recorded manual check.
+- [x] Final commit.
 
 ### ✅ Checkpoint 7 (delivery)
 
 | Exit criterion | Verify by |
 |---|---|
-| Every deliverable of the brief is present | Tick against the brief's "What to deliver" list |
-| README instructions work as written | Follow them from a fresh clone |
-| Nothing confidential in the AI log | Read it through once |
-| Time spent is stated | Matches the timestamps of the AI session log |
+| ✅ Every deliverable of the brief is present | Tick against the brief's "What to deliver" list |
+| ✅ README instructions work as written | Follow them from a fresh clone |
+| ✅ Nothing confidential in the AI log | Read it through once |
+| ✅ Time spent is stated | Matches the timestamps of the AI session log |
 
 **Notes:**
+
+- Deliverables: git repository; README with run and test instructions (Docker and local), the three decisions with their reasons and what was refused, assumptions, limitations, time spent, AI tools used; AI session log in `ai-log/session.md`.
+- The AI log is generated from the Cursor transcript: user messages and assistant replies verbatim, one line per tool call, no editor-injected context. The user name and home-directory paths are replaced; a scan finds no e-mail address, key or IP address.
+- Aligned the "no clauses flagged" copy with D9: "The AI flagged no clauses. This is not a legal opinion that the contract is risk-free."
+
+**Acceptance criteria coverage** (backend tests in `api/*/tests/`, frontend tests in `web/src/lib/*.test.ts`, manual checks in the phase 4 and 5 notes):
+
+| Scenario | Covered by |
+|---|---|
+| Plan: successful review consumes one slot | `test_plan`: `test_successful_review_consumes_one_slot` |
+| Plan: failed review does not consume | `test_plan`: `test_failed_review_does_not_consume`, `test_reviews_failed_for_any_reason_never_count` |
+| Plan: running reviews reserve slots, with the explicit message | `test_plan`: `test_running_reviews_reserve_slots`; `test_request`: `test_running_reviews_block_the_last_slot_and_the_request_is_not_saved`; `review.test`: `requestState`; manual (phase 5) |
+| Plan: reservation released on failure | `test_plan`: `test_reservation_released_on_failure` |
+| Plan: strict block when used up, direct POST refused | `test_request`: `test_strict_block_when_the_plan_is_used_up`; `test_api`: `test_request_when_the_plan_is_used_up`; `review.test`: `requestState`; manual (phase 5) |
+| Plan: month boundary, review running at midnight | `test_plan`: `test_month_boundary_counts_in_the_month_of_the_request`, `test_review_running_at_midnight_does_not_reserve_a_slot_in_the_new_month` |
+| One in progress: concurrent requests on the same document | `test_concurrency`: `test_concurrent_requests_on_the_same_document_create_exactly_one_review`; manual: the second lawyer follows the first one's review (phase 5) |
+| One in progress: stale running row does not block | `test_request`: `test_stale_running_row_does_not_block` |
+| Deadline: late completion, exactly 60 s, 59.999 s | `test_lifecycle`: `test_late_completion_is_ignored`, `test_completion_at_exactly_60_seconds_fails`, `test_completion_just_before_the_deadline_completes` |
+| Deadline: retry is a new review | `test_request`: `test_retry_is_a_new_review` |
+| Reading: partial findings marked partial | `test_api`: `test_running_review_returns_its_partial_findings_in_arrival_order`; manual (phase 5) |
+| Reading: failed review's findings not displayed | `test_api`: `test_failed_review_exposes_no_findings`; `review.test`: `panelSections`; manual (phase 5) |
+| Reading: previous review skips failed reviews | `test_reads`: `test_previous_review_skips_failed_reviews`; `review.test`: `panelSections` |
+| Reading: superseded document labelled, still reviewable | `display.test`: `supersededLabel`; `test_seed`: `test_seed_links_the_superseded_lease`; no restriction in `request_review`; manual (phase 4) |
+| Reading: completed review of a superseded document | `test_reads`: `test_reviews_of_one_document_version_never_replace_another_version` |
+| Reading: completed with no findings | `test_api`: `test_completed_review_without_findings_is_a_result`; `test_fake_ai`: `test_document_without_findings_completes_with_none`; `display.test`: badge; manual (Consulting) |
+| Reading: previous review during a new run, never merged | `review.test`: `panelSections`; manual (Lease v2, phase 5) |
+| Reading: final ordering | `review.test`: `sortFindings`; manual (Franchise, phase 5) |
+| Reading: missing clause | `review.test`: `clauseLabel`; `test_seed`: `test_seed_keeps_missing_clause_and_excerpt_as_null`; manual (NDA) |
+| Identity: unknown lawyer | `test_api`: `test_request_without_a_known_lawyer_is_rejected` |
 
 ---
 
