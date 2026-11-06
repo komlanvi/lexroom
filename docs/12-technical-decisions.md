@@ -15,7 +15,7 @@ Guiding principle, from the brief's evaluation points: **"Solution architecture,
 | TD-5 | Time and randomness | An injectable clock and random number generator, used everywhere. |
 | TD-6 | Real-time updates | Client polling. |
 | TD-7 | Identity | `X-Lawyer-Id` header, validated server-side. Not a security mechanism. |
-| TD-8 | Containerization | Docker Compose with two services: `backend` and `frontend`. |
+| TD-8 | Containerization | Docker Compose with two services: `api` (backend) and `web` (frontend). |
 | TD-9 | Frontend → API | Next.js proxies `/api/*` to the backend (same origin, no CORS). |
 | TD-10 | Startup | Migrations and seeding run automatically and are idempotent. |
 | TD-11 | Versions and tooling | Latest stable versions, resolved at scaffold time and pinned in lockfiles. `uv` for Python, `pnpm` for Node. |
@@ -73,9 +73,9 @@ Guiding principle, from the brief's evaluation points: **"Solution architecture,
 
 ## TD-8 · Containerization: Docker Compose, two services
 
-- `backend`: Django + Ninja served by a production-grade WSGI server (single worker, multiple threads, see TD-4). SQLite in a named volume.
-- `frontend`: Next.js production build (multi-stage image).
-- One command to run: `docker compose up --build`. One command to test the backend: `docker compose run --rm backend pytest`.
+- `api` (folder `api/`): Django + Ninja served by a production-grade WSGI server (single worker, multiple threads, see TD-4). SQLite in a named volume.
+- `web` (folder `web/`): Next.js production build (multi-stage image).
+- One command to run: `docker compose up --build`. One command to test the backend: `docker compose run --rm api pytest`.
 - The README also gives the local commands (without Docker) for faster development.
 - **Why:** simple setup for the evaluator. It also gives a starting point for a production deployment, which would still need PostgreSQL and the other production concerns listed in the README limitations.
 
@@ -111,7 +111,7 @@ Guiding principle, from the brief's evaluation points: **"Solution architecture,
 ├── README.md                     # run, test, decisions, assumptions, limitations, time, AI usage
 ├── samples/                      # brief's sample data (seed source)
 ├── docs/                         # this analysis
-├── backend/
+├── api/                          # backend
 │   ├── pyproject.toml, uv.lock, Dockerfile, manage.py
 │   ├── config/                   # settings (env-driven), urls, wsgi
 │   ├── workspace/                # lawyers, documents, sample findings, seed command
@@ -122,7 +122,7 @@ Guiding principle, from the brief's evaluation points: **"Solution architecture,
 │       ├── clock.py
 │       ├── api.py, schemas.py    # Ninja router: HTTP only, no business rules
 │       └── tests/
-└── frontend/
+└── web/                          # frontend
     ├── package.json, pnpm-lock.yaml, Dockerfile, next.config.ts
     └── src/
         ├── app/                  # pages: document list, document detail

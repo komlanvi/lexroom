@@ -34,23 +34,47 @@ flowchart LR
 **Goal:** an empty but runnable skeleton, with versions resolved.
 **References:** [TD-11](12-technical-decisions.md#td-11--versions-and-tooling), [TD-13](12-technical-decisions.md#td-13--code-organization).
 
-- [ ] Look up the latest stable versions of Python, Django, Django Ninja, Node.js, Next.js, pnpm and uv on the official registries. Write them in the phase notes.
-- [ ] Create `backend/` with `uv` (Django, Django Ninja, pytest, pytest-django, a WSGI server) and pin them in `uv.lock`.
-- [ ] Create `frontend/` with the Next.js App Router + TypeScript template using `pnpm`, pinned in `pnpm-lock.yaml`.
-- [ ] Root `README.md` skeleton with the required headings: run, tests, decisions on the three points, assumptions, limitations, time spent, AI tools used.
-- [ ] Decide where the AI session log goes (e.g. `ai-log/`) and start saving it.
-- [ ] Commit.
+- [x] Look up the latest stable versions of Python, Django, Django Ninja, Node.js, Next.js, pnpm and uv on the official registries. Write them in the phase notes.
+- [x] Create `api/` (backend) with `uv` (Django, Django Ninja, pytest, pytest-django, a WSGI server) and pin them in `uv.lock`.
+- [x] Create `web/` (frontend) with the Next.js App Router + TypeScript template using `pnpm`, pinned in `pnpm-lock.yaml`.
+- [x] Root `README.md` skeleton with the required headings: run, tests, decisions on the three points, assumptions, limitations, time spent, AI tools used.
+- [x] Decide where the AI session log goes (e.g. `ai-log/`) and start saving it.
+- [x] Commit.
 
 ### ✅ Checkpoint 0
 
 | Exit criterion | Verify by |
 |---|---|
-| Backend starts | `uv run python manage.py check` reports no issues |
-| Frontend starts | `pnpm dev` serves the default page |
-| Versions recorded and pinned | Phase notes list the versions; lockfiles committed |
-| README skeleton present | All required headings exist |
+| ✅ Backend starts | `uv run python manage.py check` reports no issues |
+| ✅ Frontend starts | `pnpm dev` serves the default page |
+| ✅ Versions recorded and pinned | Phase notes list the versions; lockfiles committed |
+| ✅ README skeleton present | All required headings exist |
 
 **Notes:**
+
+- Versions (latest stable, pinned):
+
+  | Tool | Version |
+  |---|---|
+  | Python | 3.15.2 |
+  | uv | 0.13.7 |
+  | Django | 6.1.3 |
+  | Django Ninja | 1.7.3 |
+  | dj-database-url | 3.1.2 |
+  | gunicorn (WSGI server) | 26.2.0 |
+  | pytest / pytest-django | 9.2.0 / 4.14.0 |
+  | Node.js | 26.13.0 (LTS) |
+  | pnpm | 12.18.0 |
+  | Next.js | 16.4.5 |
+  | React | 19.3.1 |
+  | TypeScript | 7.0.2 |
+  | Vitest | 5.1.0 |
+
+- Folders are `api/` (backend) and `web/` (frontend); the Docker services use the same names.
+- The README documents two ways to run and test: Docker, and locally without Docker (uv, Node.js, pnpm). The commands that don't exist yet (`seed`, Docker files) arrive in phases 1 and 6; checkpoint 7 checks them from a fresh clone.
+- The local backend runs with gunicorn (one worker, several threads), like in Docker, so there is exactly one sweeper (TD-4).
+- The web template is used without Tailwind (plain CSS, fewer dependencies).
+- AI session log: `ai-log/`, exported in phase 7.
 
 ---
 
@@ -226,9 +250,9 @@ Walk through every scenario of the *Reading results* and *Identity* features in 
 **Goal:** the evaluator can run and test everything with Docker only.
 **References:** [TD-8](12-technical-decisions.md#td-8--containerization-docker-compose-two-services), [TD-10](12-technical-decisions.md#td-10--startup-migrations-and-seeding).
 
-- [ ] `backend/Dockerfile`: install with `uv`, entrypoint runs `migrate`, `seed`, then the WSGI server with **one worker and several threads**.
-- [ ] `frontend/Dockerfile`: multi-stage build, production server.
-- [ ] `docker-compose.yml`: `backend` and `frontend` services, named volume for SQLite, only the frontend port published, backend URL passed to the frontend (build argument or environment, per the phase 4 choice).
+- [ ] `api/Dockerfile`: install with `uv`, entrypoint runs `migrate`, `seed`, then the WSGI server with **one worker and several threads**.
+- [ ] `web/Dockerfile`: multi-stage build, production server.
+- [ ] `docker-compose.yml`: `api` and `web` services, named volume for SQLite, only the frontend port published, backend URL passed to the frontend (build argument or environment, per the phase 4 choice).
 - [ ] `samples/` mounted or copied into the backend image for seeding.
 - [ ] Commit.
 
@@ -238,7 +262,7 @@ Walk through every scenario of the *Reading results* and *Identity* features in 
 |---|---|
 | Works from a fresh clone | Clone into a new folder, `docker compose up --build`, open the app, complete one review |
 | Restart keeps data, no duplicates | `docker compose restart`; reviews still there, still 13 documents |
-| Backend tests run in Docker | `docker compose run --rm backend pytest` green |
+| Backend tests run in Docker | `docker compose run --rm api pytest` green |
 | Only the frontend is exposed | `docker compose ps`: only the frontend port is published |
 
 **Notes:**
