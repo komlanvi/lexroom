@@ -176,29 +176,40 @@ flowchart LR
 **Goal:** a review can be requested over HTTP, runs in the background, and can be followed until it completes or fails.
 **References:** [TD-4](12-technical-decisions.md#td-4--background-work-threads-in-the-backend-process), [Fake AI flow](05-user-flows.md#fake-ai-job-and-event-handling), [API contract](08-api-contract.md), Q7 in [Questions and decisions](10-scope-and-questions.md#questions-and-decisions).
 
-- [ ] Fake AI: one draw per run, **error ~20% / slow ~10% / completed ~70%** (mutually exclusive). Normal: all findings spread over 5–30 s. Error: `k ∈ [0, n]` findings, then error within 5–30 s. Slow: all findings spread over 60–120 s. Clock, RNG and sleep injected.
-- [ ] The fake stops as soon as a write is not applied (review already terminal).
-- [ ] Start the fake AI thread **after commit** (`transaction.on_commit`).
-- [ ] Sweeper thread started once at backend startup.
-- [ ] `POST /api/documents/{id}/reviews` with `X-Lawyer-Id`: `201`, `400 UNKNOWN_LAWYER`, `404`, `409 REVIEW_IN_PROGRESS {review}`, `409 PLAN_EXHAUSTED {resets_at, completed, running}`. Error body `{code, message, details}`.
-- [ ] `GET /api/reviews/{id}`: applies lazy expiry; returns `server_now`, `deadline_at`, `is_final`; `findings` for running and completed, **always `[]` for failed** (BR-16).
-- [ ] `GET /api/documents` returns `latest_review` and `current_result`.
-- [ ] Tests: fake AI outcomes with a seeded RNG (all three outcomes, error after 0 and after k findings, 0-finding document completes); API status codes and error bodies; failed review returns no findings.
-- [ ] Manual run: request a review locally and poll it until it ends.
-- [ ] Commit.
+- [x] Fake AI: one draw per run, **error ~20% / slow ~10% / completed ~70%** (mutually exclusive). Normal: all findings spread over 5–30 s. Error: `k ∈ [0, n]` findings, then error within 5–30 s. Slow: all findings spread over 60–120 s. Clock, RNG and sleep injected.
+- [x] The fake stops as soon as a write is not applied (review already terminal).
+- [x] Start the fake AI thread **after commit** (`transaction.on_commit`).
+- [x] Sweeper thread started once at backend startup.
+- [x] `POST /api/documents/{id}/reviews` with `X-Lawyer-Id`: `201`, `400 UNKNOWN_LAWYER`, `404`, `409 REVIEW_IN_PROGRESS {review}`, `409 PLAN_EXHAUSTED {resets_at, completed, running}`. Error body `{code, message, details}`.
+- [x] `GET /api/reviews/{id}`: applies lazy expiry; returns `server_now`, `deadline_at`, `is_final`; `findings` for running and completed, **always `[]` for failed** (BR-16).
+- [x] `GET /api/documents` returns `latest_review` and `current_result`.
+- [x] Tests: fake AI outcomes with a seeded RNG (all three outcomes, error after 0 and after k findings, 0-finding document completes); API status codes and error bodies; failed review returns no findings.
+- [x] Manual run: request a review locally and poll it until it ends.
+- [x] Commit.
 
 ### ✅ Checkpoint 3
 
 | Exit criterion | Verify by |
 |---|---|
-| A full review runs end to end | Manual `curl` POST then GET until terminal |
-| All three outcomes reachable | Fake AI tests with fixed seeds |
-| A slow run always ends as `timed_out` and never consumes | Test with a slow outcome and the fake clock |
-| API errors match the contract | API tests for every status code |
-| Failed reviews expose no findings | API test |
-| All backend tests green | `uv run pytest` |
+| ✅ A full review runs end to end | Manual `curl` POST then GET until terminal |
+| ✅ All three outcomes reachable | Fake AI tests with fixed seeds |
+| ✅ A slow run always ends as `timed_out` and never consumes | Test with a slow outcome and the fake clock |
+| ✅ API errors match the contract | API tests for every status code |
+| ✅ Failed reviews expose no findings | API test |
+| ✅ All backend tests green | `uv run pytest` |
 
 **Notes:**
+
+- The fake AI is split in two: `write_script` (pure: draws the outcome and the event times from the RNG) and `run` (plays a script against the database with an injected clock and sleep). Script tests check the brief's rates and time ranges over 10,000 seeded draws; run tests play hand-written scripts on the fake clock.
+- Event times count from `requested_at`, the same origin as the deadline.
+- `on_commit` is registered inside the request transaction, so the AI thread never sees an uncommitted review. An autouse test fixture replaces `fake_ai.start` with a recorder: no test starts a real thread, and one API test checks the start happens after commit.
+- The sweeper starts in `config/wsgi.py`, not in an `AppConfig`, so `migrate`, `seed` and the tests never start it. It runs every 5 s.
+- `GET /api/documents` and `/api/documents/{id}` moved from `workspace` to `reviews`: they now carry review state, and `workspace` stays independent of `reviews`.
+- Reads expire overdue reviews **once per request** (`list_documents`, `get_document`, `get_review`), then read. `latest_review` and `current_result` are plain queries. The list runs 2 small queries per document (13 documents); fine at this size.
+- `latest_review` has the summary fields plus `deadline_at` (needed for a countdown in the list). It has no `findings_count`: when the latest review is completed it is also `current_result`, which has the count.
+- Errors: one `ApiError` exception, rendered by one handler, so every error has the `{code, message, details}` body. Lawyer is checked before the document (`400` before `404`); a missing, empty or malformed `X-Lawyer-Id` is also `UNKNOWN_LAWYER`.
+- Added a minimal `LOGGING` config: without it Django drops the `INFO` logs of the `reviews` app (fake AI outcome, dropped late events, sweeper).
+- Manual run (8 reviews, real threads, real time): 5 completed, 2 AI errors, 1 slow run that timed out at 60 s with its 11 partial findings hidden; the plan ended at 5 completed, 5 available.
 
 ---
 

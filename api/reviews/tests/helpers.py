@@ -14,6 +14,7 @@ DOCUMENTS = {
     "saas": "d6c1f51a-a15e-4502-923a-656eed71bcc7",
     "supply": "9545d54a-7e23-4b56-b2a3-01bf5d3b326f",
     "loan": "3ce07ee8-540f-4598-be28-038ff929e704",
+    "consulting": "077070a7-519b-411e-a466-3c97db7f07ff",
     "franchise": "61a3bea4-f6cf-4854-92b6-671ae1349309",
 }
 LAWYERS = {

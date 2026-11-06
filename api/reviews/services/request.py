@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
+from functools import partial
 
 from django.conf import settings
 from django.db import transaction
 
+from reviews import fake_ai
 from reviews.models import Review, ReviewStatus
 from reviews.services.expiry import expire_overdue
 from reviews.services.plan import Plan, get_plan
@@ -37,9 +39,12 @@ def request_review(document: Document, lawyer: Lawyer, now: datetime) -> Review:
         if plan.available < 1:
             raise PlanExhausted(plan)
 
-        return Review.objects.create(
+        review = Review.objects.create(
             document=document,
             requested_by=lawyer,
             requested_at=now,
             deadline_at=now + timedelta(seconds=settings.REVIEW_TIMEOUT_S),
         )
+        # After commit, so the AI thread never sees a review that could still be rolled back.
+        transaction.on_commit(partial(fake_ai.start, review.id))
+        return review

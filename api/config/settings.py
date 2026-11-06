@@ -37,6 +37,13 @@ if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "loggers": {"reviews": {"handlers": ["console"], "level": "INFO"}},
+}
+
 TIME_ZONE = "UTC"
 USE_TZ = True
 
