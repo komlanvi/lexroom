@@ -29,7 +29,7 @@ Choose **one** of the two ways below. Docker is the shortest. The local setup ne
 4. Run the frontend tests:
 
    ```sh
-   docker compose run --rm web pnpm test
+   docker compose run --rm web-test
    ```
 
 Stop with `Ctrl+C`. `docker compose down -v` also deletes the database.

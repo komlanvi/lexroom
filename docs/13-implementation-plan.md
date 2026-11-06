@@ -297,22 +297,29 @@ Walk through every scenario of the *Reading results* and *Identity* features in 
 **Goal:** the evaluator can run and test everything with Docker only.
 **References:** [TD-8](12-technical-decisions.md#td-8--containerization-docker-compose-two-services), [TD-10](12-technical-decisions.md#td-10--startup-migrations-and-seeding).
 
-- [ ] `api/Dockerfile`: install with `uv`, entrypoint runs `migrate`, `seed`, then the WSGI server with **one worker and several threads**.
-- [ ] `web/Dockerfile`: multi-stage build, production server.
-- [ ] `docker-compose.yml`: `api` and `web` services, named volume for SQLite, only the frontend port published, backend URL passed to the frontend (build argument or environment, per the phase 4 choice).
-- [ ] `samples/` mounted or copied into the backend image for seeding.
-- [ ] Commit.
+- [x] `api/Dockerfile`: install with `uv`, entrypoint runs `migrate`, `seed`, then the WSGI server with **one worker and several threads**.
+- [x] `web/Dockerfile`: multi-stage build, production server.
+- [x] `docker-compose.yml`: `api` and `web` services, named volume for SQLite, only the frontend port published, backend URL passed to the frontend (build argument or environment, per the phase 4 choice).
+- [x] `samples/` mounted or copied into the backend image for seeding.
+- [x] Commit.
 
 ### ✅ Checkpoint 6
 
 | Exit criterion | Verify by |
 |---|---|
-| Works from a fresh clone | Clone into a new folder, `docker compose up --build`, open the app, complete one review |
-| Restart keeps data, no duplicates | `docker compose restart`; reviews still there, still 13 documents |
-| Backend tests run in Docker | `docker compose run --rm api pytest` green |
-| Only the frontend is exposed | `docker compose ps`: only the frontend port is published |
+| ✅ Works from a fresh clone | Clone into a new folder, `docker compose up --build`, open the app, complete one review |
+| ✅ Restart keeps data, no duplicates | `docker compose restart`; reviews still there, still 13 documents |
+| ✅ Backend tests run in Docker | `docker compose run --rm api pytest` green |
+| ✅ Only the frontend is exposed | `docker compose ps`: only the frontend port is published |
 
 **Notes:**
+
+- Base images pinned to the versions used locally: `python:3.15.2-slim`, `ghcr.io/astral-sh/uv:0.13.7`, `node:26.13.0-slim`. The slim Python image ships the time zone database, so `Europe/Rome` needs no extra package.
+- Backend: dependencies installed from `uv.lock` (dev group kept, so `pytest` runs in the same image); `samples/` copied in from a second build context (`additional_contexts`), so the build context stays `api/`. SQLite lives in the `db` named volume (`DATABASE_URL=sqlite:////data/db.sqlite3`). Runs as a non-root user.
+- Frontend: Next.js `output: "standalone"`; the runtime stage holds only the server and its traced dependencies, run as the `node` user. `API_URL=http://api:8000` is an environment variable, read at request time by the phase 4 route handler.
+- `web` waits for the `api` healthcheck, so the first page load never hits a backend that is still migrating and seeding.
+- Frontend tests in Docker: the runtime image has no dev dependencies, so a `web-test` service (profile `test`, build stage of the same Dockerfile) runs them: `docker compose run --rm web-test`.
+- Gunicorn 26 opens a control socket in the user's home directory, so the backend user is created with one.
 
 ---
 

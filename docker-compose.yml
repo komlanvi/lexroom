@@ -1,0 +1,37 @@
+services:
+  api:
+    build:
+      context: ./api
+      additional_contexts:
+        samples: ./samples
+    environment:
+      DATABASE_URL: sqlite:////data/db.sqlite3
+    volumes:
+      - db:/data
+    # Not published: the browser reaches the API only through the web app's /api proxy (TD-9).
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/plan')"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  web:
+    build: ./web
+    environment:
+      API_URL: http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  # Frontend tests, on demand: docker compose run --rm web-test
+  web-test:
+    build:
+      context: ./web
+      target: build
+    command: ["pnpm", "test"]
+    profiles: ["test"]
+
+volumes:
+  db:
