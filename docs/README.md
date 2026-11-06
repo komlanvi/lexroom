@@ -1,6 +1,6 @@
 # Lexroom · Contract Review Flow — Product & Technical Analysis
 
-Sources: `Business Case - Senior Full Stack Engineer .pdf`, `samples/documents.json`, `samples/lawyers.json`.
+Sources: the business case (not included in this repository), `samples/documents.json`, `samples/lawyers.json`.
 Perspective: Senior Product Owner with a Senior Software Engineer background.
 
 ## Documents
