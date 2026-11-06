@@ -3832,3 +3832,240 @@ I'm checking the agent-transcripts folder to see whether its files have timestam
 - `Grep` Business Case - Senior Full Stack Engineer .pdf
 - `Read` README.md
 - `Shell` List transcripts and ai-log folder
+
+**Assistant:**
+
+The PDF's text isn't searchable as raw bytes, so I'll extract it.
+
+I'm trying to get the text out of this PDF, since grep can't read it. I'll check whether pdftotext or Python's pypdf is available, and if not, use the Read tool, which supports PDFs. The file is about 1,559 lines, so I'll read it in portions.
+
+- `Shell` Extract brief delivery section
+
+**Assistant:**
+
+`pdftotext` isn't installed. The brief's deliverables were already summarised in the analysis docs, so I'll look there instead.
+
+I'm going to check the file docs/01-context-and-requirements.md, which should lay out the brief's deliverables.
+
+- `Grep` docs
+
+**Assistant:**
+
+I need to list the deliverables: a README covering how to run and test, decisions and their reasons, assumptions, limitations, time spent, and AI tools used, plus an AI session log. For time spent, I'm checking whether the transcript file has timestamps, starting with the keys in its first lines.
+
+
+The deliverables list is set: a Git repo, a README, the AI session log. I'm checking the session transcript for timestamps next, since time spent depends on them.
+
+- `Shell` Inspect transcript structure
+
+**Assistant:**
+
+I'm timing the session from 11:36 to about 16:20, roughly 4 hours 45 minutes including analysis, and I'll confirm the exact end time with `date` when I commit. That puts me over the 4-hour timebox.
+
+I'm moving on to the export: converting the session transcript into a markdown log at ai-log/session.md, and first I need to scrub anything personal or confidential, such as the username path, any email addresses, tokens, or secrets. I'll grep the transcript for those patterns and check which content types the assistant messages contain before deciding what to keep.
+
+
+The transcript timestamps run from 11:36 to 16:06, and I'm now checking it for personal data such as usernames, emails, and secrets before exporting.
+
+- `Shell` Scan transcript for personal data
+
+- `Shell` Scan transcript structure and personal data
+
+**Assistant:**
+
+I'm checking the "password" hits for context, and I also see tool calls with commands as inputs. The export should be markdown with user and assistant messages, with each tool call reduced to a single line. For paths, I'll swap the repo path for "<repo>" and the home directory for "~", and handle the Cursor agent-store paths the same way.
+
+I'm trimming the rest of the path swap: after the home directory becomes "~", the Cursor agent-store paths follow the same treatment. Next I'll keep only the timestamp and user_query content from user messages and drop the system tags. Then I'll check the "password" hits in context.
+
+
+The username shows up in 517 file paths, and no emails or IP addresses turned up, since the email matches were only Python decorators. Next I'll check the 6 "password" mentions and the structure of the tool-call entries.
+
+- `Shell` Check password contexts and tool_use shape
+
+**Assistant:**
+
+Those mentions are harmless (Django password validators and a plugin name). Before writing the export, I'll check whether the brief PDF is tracked in git, since it may be confidential.
+
+I'm thinking that tool-use inputs can be large, like full file contents, so the export should list each tool call compactly, showing just the name plus the first line of its description, path, or command, truncated. File contents can be left out since they already live in git. As for the export script itself, it's a one-off, so I'd keep it in /tmp rather than committing it, and write the log to `ai-log/session.md`. The final user message won't appear in it since the export runs before that point, so I'll run it at the end, just before the commit.
+
+I'm checking whether the Business Case PDF is tracked in the repo, since it sits at the root and might be confidential enough to keep out of the commit.
+
+- `Shell` Check tracked root files and PDF status
+
+**Assistant:**
+
+The PDF is already committed, and since the brief comes from the company and the repo goes back to them, I'm leaving it alone. Next I'll move on to the README and check the assumptions, limitations, and open questions in the docs.
+
+
+The PDF is tracked from the first commit and the repo belongs to the brief's author, so I'm leaving it. Next I'm reading the README's decisions, assumptions and limitations to find the open questions and recorded assumptions.
+
+- `Read` docs/10-scope-and-questions.md
+- `Read` docs/02-issues-and-assumptions.md
+
+**Assistant:**
+
+I'm checking the copy for the ReviewPanel against the D9 wording, since I wrote "The AI found nothing to flag" instead of the planned disclaimer. I think the fix is to change the message to say no clauses were flagged, followed by the "not a legal opinion" line. I'm also noting that D8's absolute-plus-relative time display isn't implemented yet, just relative time, which is a minor gap.
+
+I'm weighing whether to add a note about the absolute-only time display to the README's limitations, since the acceptance criteria don't require the relative part. I'm leaning toward leaving the detail page label as "Previous version" without fetching the newer document's date, then fixing the D9 copy, and finally mapping each acceptance scenario to a test or manual check.
+
+
+The docs cover the README's assumptions and limitations. I'm aligning the no-findings wording (D9) with the agreed text, since my version differs.
+
+- `StrReplace` web/src/components/ReviewPanel.tsx
+- `Shell` List backend test names
+
+**Assistant:**
+
+I'm adding an acceptance criteria coverage table to the Phase 7 notes, keeping it brief. Next I'm mapping each scenario to its test: a successful review consumes a slot (test_plan), a failed one doesn't, and running reviews reserve slots, covered by two tests across the plan and request levels.
+
+I'm now going through the scenarios one by one, matching each to its test: reserved slots, the strict block at the plan limit, and the month and midnight boundaries. Then the in-progress cases, the deadline checks at exactly 60 and 59.999, and the reading states, including partial, failed, and superseded reviews.
+
+Next I'm checking the superseded-document case: a completed review of an older version should still be covered by an existing test, and I'll confirm that against the code. Then the completed-with-no-findings result, which has its own test, a fake-AI fixture, and a badge check. The previous-review panel and the final finding ordering each have a test and a manual check. The missing-clause label is covered by a unit test and a seed check, and an unknown lawyer is rejected by a request test.
+
+Now I'm drafting the README's decisions section, then the assumptions: the plan month follows Europe/Rome, a slot is reserved on request and consumed on completion or released on failure, and the 60-second deadline is strict.
+
+I'm now listing the remaining limitations: moving off SQLite would mean switching to Postgres with a row lock on the workspace, the background work runs in-process on a single worker so a restart times out running reviews without losing a slot, there's no real authentication and polling rather than push, and the UI is checked manually alongside unit tests on the display logic.
+
+I'm going back over the README's "Limitations" section, noting that the strict block race notice is covered only by unit tests, and that production hardening still needs attention: the SECRET_KEY default, and DEBUG defaulting to False with no HTTPS setup. Then I'm noting the work has gone over its timebox. For the time-spent section, I'll compute the total at the end, starting from when the implementation began.
+
+
+I'm mapping each acceptance scenario to its backend test, frontend unit test, or manual check, then pulling user message timestamps from the transcript for the timeline.
+
+- `Shell` List user messages with timestamps
+
+**Assistant:**
+
+I'm checking the phase timestamps against each other, and they seem to line up: phases run from 14:55 to 15:45, which is close enough, and the UTC tool output converts to the same local time, so the times are consistent.
+
+I'm working out the session timing: analysis and decisions ran roughly 11:36 to 14:35, implementation from there to the end, about 4h45 total. I'll pull the exact end time from the system clock when I finish the export.
+
+I'm sketching the export layout now: a markdown file with a short header, then user and assistant turns in order, with tool calls listed as one-line bullets naming the tool and its target rather than the output. I'm also weighing which model and tools to name for this session, and I'll stick to what this session actually shows.
+
+I'm going to write the README sections now, with a placeholder for the end time that I'll fill in with `date` right before the commit. The session export goes to `ai-log/session.md` as the last step, after the README is in place.
+
+
+The timeline is settled: analysis ran 11:36 to about 14:35, and implementation has run from Phase 0 since then. Next I'm writing the README's decisions, assumptions, limitations and AI-tools sections, with time spent added last.
+
+- `StrReplace` README.md
+
+**Assistant:**
+
+The README shouldn't hard-code "in 25 days", since the count changes daily. I'll make that wording generic.
+
+I need to fix the README line that says "in 25 days" since it will go stale, so I'll drop the "(and how many days are left)" part. The Docker command with `docker compose down -v` looks fine. Next I'm checking the claims: the default SECRET_KEY is confirmed, the "I challenged..." wording is in the user's voice so it can stay, and the challenge example and the claim about deliberately breaking the code both match the transcript and earlier notes.
+
+- `StrReplace` README.md
+
+**Assistant:**
+
+I'm putting together the export script at /tmp/export_log.py, which will write the session out to ai-log/session.md. The path redactions are planned: the lexroom workspace path becomes ".", the home directory becomes "~", and any other mention of the username becomes "user". I also need to drop the non-user_query parts of user messages, and I'm still working out how to handle the user messages that have no user_query.
+
+I'm checking which of the remaining user messages can be skipped, and I'm confirming that the first user message only carries the query, not any PDF content, so nothing else needs to go in the export.
+
+
+Next up is the AI log exporter, which keeps messages and replies verbatim, lists tool calls on one line, drops Cursor's injected system context, and replaces home-directory paths.
+
+- `Write` /tmp/export_ai_log.py
+
+- `Shell` Export AI log and check for personal data
+
+**Assistant:**
+
+No personal data turned up, though the analysis said sixteen franchises where the count is actually eighteen. Next I'm checking whether anything in the brief content is confidential. It's the company's own brief, so quoting it is fine. Then I'll update the Phase 7 ticks and acceptance mapping, log time spent, regenerate the log at the end, and commit, running the web tests and tsc after review.
+
+I'm adding a note to the ai-log README pointing at session.md, then grabbing the current time so I can fill in the time-spent breakdown: analysis and decisions from 11:36 to 14:35, implementation phases 0–6 from 14:35 to 16:06, and delivery from 16:06 until the commit.
+
+
+The export is clean of personal data, so I'm updating ai-log/README.md, ticking Phase 7, and re-checking the frontend.
+
+- `Write` ai-log/README.md
+- `Read` docs/13-implementation-plan.md
+- `Shell` Re-run frontend tests, check time
+
+**Assistant:**
+
+Tests and types pass. Now I'll tick Phase 7 in the plan with the acceptance-criteria coverage.
+
+I'm fairly confident the README works as written, since the Docker path was already checked from a fresh clone in Phase 6 and the local commands have been run throughout. I'm considering a quick fresh-clone run of the local setup too, roughly a minute to clone into /tmp and go through the install and dev steps.
+
+I'm going to commit the final version first, then run a fresh clone to verify the local commands, skipping the running servers since the Docker stack holds those ports. If anything needs fixing, I'll amend the commit afterward.
+
+- `StrReplace` docs/13-implementation-plan.md
+
+**Assistant:**
+
+Next, the time-spent section: about 4 h 40 min from the first message (11:36) to the final commit at about 16:15.
+
+I'm checking that the strict-block test for direct POST and the seed-link test name are both in place, and both are. Next I'm settling the time-spent entry: the end time is around 16:11 and I'll use 16:15 to cover the final commit, so the span runs from 11:36 to 16:15.
+
+I'm writing the time-spent line now: about 4 h 40 min, from the first message at 11:36 to the final commit around 16:15 on Nov 6, with analysis included. I'm splitting it into roughly 3 h of analysis and planning up to 14:35, then 1 h 40 min of implementation and delivery, which puts it about 40 minutes over the 4-hour timebox.
+
+- `StrReplace` README.md
+
+**Assistant:**
+
+Now I'll re-export the log so it covers this phase, scan it once more, and commit.
+
+I'm re-exporting the log so it covers phase 7 up to this point, then running a final scan and committing. After that I'll do a fresh-clone check and run the tests, amending if anything turns up. The final summary won't make it into the log since it comes after the commit, which is fine.
+
+- `Shell` Export log, commit Phase 7
+
+**Assistant:**
+
+Committed at 16:10. Last check: the local (non-Docker) README steps from a fresh clone. Docker from a fresh clone was already verified in Phase 6.
+
+I'm planning to commit at 16:10 instead of 16:15, then amend the time once the fresh-clone check is done. Since port 3000 is taken by Docker, I'm skipping the server run and sticking to the tests and `pnpm build`.
+
+- `Shell` Follow local README steps from a fresh clone
+
+**Assistant:**
+
+I'm correcting the end time to 16:10, which makes the total about 4 h 35 min, but the amended commit will actually finish around 16:12, so the overrun is about 35 minutes. I'll re-export the log so it includes this step, then amend the commit.
+
+
+All local steps pass from a fresh clone: seeding is idempotent, the 106 backend and 45 frontend tests are green, and the build succeeds. I'm correcting the end time to 16:12 and amending the commit.
+
+- `StrReplace` README.md
+- `Shell` Re-export log and amend Phase 7 commit
+
+**Assistant:**
+
+Phase 7 is done and committed as `0eb825d` ("Phase 7: documentation and delivery"), so every phase of the plan is now complete and ticked.
+
+**What was added:**
+- **README:** the three decisions with their reasons and what was refused, then assumptions, limitations, time spent, and AI tools used.
+- **AI session log** (`ai-log/session.md`): your messages and my replies are verbatim, with each tool call on one line (the code is in git history). I removed your user name, home-directory paths and the context Cursor injects; a final scan found no names, paths, email addresses or keys.
+- **Acceptance criteria coverage** in the implementation plan: each scenario is mapped to the backend test, frontend test or recorded browser check that covers it. None is left uncovered.
+- **One copy fix:** the "no clauses flagged" text now matches the wording agreed in the analysis: "The AI flagged no clauses. This is not a legal opinion that the contract is risk-free."
+
+**Checked:** I followed the local (non-Docker) README steps from a fresh clone. Seeding twice changed nothing, all 106 backend and 45 frontend tests passed, and the frontend built. The Docker steps were checked from a fresh clone in Phase 6.
+
+**Please review these, since they speak in your voice or depend on your memory:**
+- **Time spent:** the README states about 4 h 35 min, from 11:36 to 16:12. That splits into about 3 h of analysis and decisions, 1 h 30 of implementation, and 5 min of delivery. That is 35 minutes over the 4 h timebox. It's measured from the session's first message only, so add any time you spent outside it (for example reading the brief first).
+- **"AI tools used":** written in the first person, and it describes only this Cursor session with Claude Opus 5.5. Add any other tool you used.
+- **The AI log stops at this message.** If you want this final exchange included, the log needs exporting once more. The export script isn't in the repo (I kept it out to avoid adding files), so I'd re-run it from here.
+
+**Still running:** the Docker stack from the Phase 6 fresh clone, in `/tmp/lexroom-fresh` on port 3000. Stop it with `docker compose down -v` from that folder.
+
+I'm going to delete the /tmp/lexroom-local clone, since it's safe to remove, and leave /tmp/lexroom-fresh alone because its docker stack is still running and the user may be using it. Once the deletion is done I'll summarize what was removed and what was kept.
+
+---
+
+## User · 4:12 PM
+
+Okay, make sure the README only contains what was requested in the requirements (plus both the instructions to run the app with or without docker).
+
+Export the AI conversation log into a file, removing any personal information if present.
+
+As always, commit the changes in a clean, structured way, keeping the final delivery in mind.
+
+**Assistant:**
+
+I'll re-read the README against the brief's list: run and test instructions, decisions with reasons, assumptions, limitations, time spent and AI tools used.
+
+I'm checking the README against the requirements: it needs run and test steps, decisions, assumptions, limitations, time spent, and AI tools used. The intro and folder list look like extras the brief didn't ask for, so I'm leaning toward removing them and keeping just a one-line title.
+
+Time spent needs updating since the final commit will land after 16:12, so I'll set it at the end once everything is done. The assumptions section is missing the completed-versus-failed reviews interpretation, which I'll move in from the decisions section. I also want to check whether the doc links are fine to keep as references.
+
+- `Read` README.md
+- `Read` README.md
