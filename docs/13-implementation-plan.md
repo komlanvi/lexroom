@@ -2,9 +2,7 @@
 
 [← Back to the index](README.md)
 
-Actionable working document. Work through the phases **in order**. Each phase ends with a **checkpoint**: every exit criterion must be met (✅) before starting the next phase. If a criterion can't be met within the phase's time budget, record why in the phase notes and decide explicitly: fix now, or record it as a limitation in the README.
-
-**Timebox:** 4 hours in total (brief). The budgets below add up to 240 minutes.
+Actionable working document. Work through the phases **in order**. Each phase ends with a **checkpoint**: every exit criterion must be met (✅) before starting the next phase. If a criterion can't be met, record why in the phase notes and decide explicitly: fix now, or record it as a limitation in the README.
 
 **How to use the checklists:** tick `[x]` as items are done. Don't tick a checkpoint item until it has been verified with the command or check given.
 
@@ -12,16 +10,16 @@ Actionable working document. Work through the phases **in order**. Each phase en
 
 ## Overview
 
-| Phase | Goal | Budget |
-|---|---|---|
-| 0 | Repository and tooling ready | 10 min |
-| 1 | Backend foundation: models, seed, read endpoints | 35 min |
-| 2 | Review rules in the service layer, fully tested | 50 min |
-| 3 | Fake AI, sweeper and review endpoints | 30 min |
-| 4 | Frontend foundation: proxy, identity, document list, plan counter | 35 min |
-| 5 | Frontend review flows: request, follow, read | 45 min |
-| 6 | Docker: one-command run and test | 20 min |
-| 7 | Documentation and delivery | 15 min |
+| Phase | Goal |
+|---|---|
+| 0 | Repository and tooling ready |
+| 1 | Backend foundation: models, seed, read endpoints |
+| 2 | Review rules in the service layer, fully tested |
+| 3 | Fake AI, sweeper and review endpoints |
+| 4 | Frontend foundation: proxy, identity, document list, plan counter |
+| 5 | Frontend review flows: request, follow, read |
+| 6 | Docker: one-command run and test |
+| 7 | Documentation and delivery |
 
 ```mermaid
 flowchart LR
@@ -256,7 +254,7 @@ Walk through every scenario of the *Reading results* and *Identity* features in 
 - [ ] README: decisions on the three points with their reasons, and what was refused (link to [decisions](03-decisions.md)).
 - [ ] README: assumptions (Europe/Rome, month of the request, completed vs failed reviews, identity, Q6 still open).
 - [ ] README: limitations (SQLite only and how to switch, in-process threads, no authentication, anything unfinished from the checkpoints).
-- [ ] README: time actually spent.
+- [ ] README: time actually spent, deduced from the timestamps of the AI session log (first to last message, analysis included).
 - [ ] README: AI tools used and how.
 - [ ] AI session log exported, with anything personal or confidential removed.
 - [ ] Final pass over the [acceptance criteria](09-acceptance-criteria.md): every scenario covered by a test or a recorded manual check.
@@ -269,7 +267,7 @@ Walk through every scenario of the *Reading results* and *Identity* features in 
 | Every deliverable of the brief is present | Tick against the brief's "What to deliver" list |
 | README instructions work as written | Follow them from a fresh clone |
 | Nothing confidential in the AI log | Read it through once |
-| Time spent is stated | README section filled in |
+| Time spent is stated | Matches the timestamps of the AI session log |
 
 **Notes:**
 
