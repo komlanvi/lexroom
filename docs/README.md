@@ -18,6 +18,8 @@ Perspective: Senior Product Owner with a Senior Software Engineer background.
 | [Acceptance criteria (Given / When / Then)](09-acceptance-criteria.md) | 09-acceptance-criteria.md |
 | [Scope and questions](10-scope-and-questions.md) | 10-scope-and-questions.md |
 | [Suggestions for future improvements](11-future-improvements.md) | 11-future-improvements.md |
+| [Technical decisions](12-technical-decisions.md) | 12-technical-decisions.md |
+| [Implementation plan (phases, checklists, checkpoints)](13-implementation-plan.md) | 13-implementation-plan.md |
 
 ## Identifiers used across the documents
 
@@ -28,6 +30,7 @@ Perspective: Senior Product Owner with a Senior Software Engineer background.
 | A1 … G6 | Pitfalls and assumptions, grouped by topic (A plan, B lifecycle, C concurrency, D reading, E identity, F tensions, G technical) | [Pitfalls and assumptions](02-issues-and-assumptions.md) |
 | BR-1 … BR-22 | Normative business rules | [Domain model and business rules](04-domain-model-and-business-rules.md) |
 | Q1 … Q7 | Questions and their status | [Scope and questions](10-scope-and-questions.md#questions-and-decisions) |
+| TD-1 … TD-13 | Technical decisions | [Technical decisions](12-technical-decisions.md) |
 
 ---
 
